@@ -32,14 +32,14 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
     private void OnEnable() {
         polarityManager.OnPolarityChanged += UpdateFaceColor;
-        SwipeDetector.OnSwipeUp += Jump;
-        DashDetector.OnDash += Dash;
+        MobileInputHandler.OnSwipeUp += Jump;
+        MobileInputHandler.OnDoubleTap += Dash;
     }
 
     private void OnDisable() {
         polarityManager.OnPolarityChanged -= UpdateFaceColor;
-        SwipeDetector.OnSwipeUp -= Jump;
-        DashDetector.OnDash -= Dash;
+        MobileInputHandler.OnSwipeUp -= Jump;
+        MobileInputHandler.OnDoubleTap -= Dash;
     }
 
     private void FixedUpdate() {
@@ -89,7 +89,7 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
     }
 
     public void ResetPosition(Vector3 pos) {
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         transform.position = pos;
     }

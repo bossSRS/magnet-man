@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player Settings
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  jumpForce: 7
+  jumpForce: 100
   dashForce: 20
   polarityToggleMin: 15
   polarityToggleMax: 25
