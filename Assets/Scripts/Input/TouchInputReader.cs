@@ -49,8 +49,8 @@ public class TouchInputReader : MonoBehaviour {
 
     private void OnTouchEnd() {
         isTouching = false;
+        if(GameManager.isUsingJoystick) return;
         Vector2 delta = touchEndPos - touchStartPos;
-
         if (delta.y > swipeThreshold && Mathf.Abs(delta.y) > Mathf.Abs(delta.x)) {
             OnSwipeUp?.Invoke();
         }
