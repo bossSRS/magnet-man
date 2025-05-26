@@ -30,6 +30,7 @@ public class TouchInputReader : MonoBehaviour {
     private void OnDisable() => controls.Disable();
 
     private void OnTouchStart() {
+        if(GameManager.isUsingJoystick) return;
         isTouching = true;
         touchStartPos = controls.Player.TouchPos.ReadValue<Vector2>();
 
