@@ -11,6 +11,8 @@ public class MagnetPole : MonoBehaviour {
     private Rigidbody playerRigidbody;
     public bool isPolarityInEffefct;
     public bool isNeutralInEffefct;
+    public bool isAttachWithPlayer;
+
     private void Start() 
     {
         polarityManager = DIContainer.Resolve<PolarityManager>();
@@ -55,10 +57,29 @@ public class MagnetPole : MonoBehaviour {
 
         // Polarity logic: repel = +1, attract = -2 (stronger pull)
         bool samePolarity = polePolarity.polarity == polarityManager.CurrentPolarity.polarity;
-        float forceScale = samePolarity ? 1f : -2f;
+        float forceScale = samePolarity ? 1f : -5f;
         Vector3 magneticForce = horizontalDir * settings.forceMagnitude * forceScale;
-
+        var forceVector3 = new Vector3(magneticForce.x, horizontalDir.y, magneticForce.z);
         // Preserve Y (vertical) velocity for jumping
-        rb.linearVelocity = new Vector3(magneticForce.x, rb.linearVelocity.y, magneticForce.z);
+        if (samePolarity)
+        {
+            rb.linearVelocity = forceVector3;
+        }
+        else
+        {
+            if(!isAttachWithPlayer)rb.AddForce(forceVector3,ForceMode.Acceleration);
+        }
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if(!other.gameObject.CompareTag("Player")) return;
+        isAttachWithPlayer = true;
+    }
+
+    private void OnCollisionExit(Collision other)
+    {
+        if(!other.gameObject.CompareTag("Player")) return;
+        isAttachWithPlayer = false;
     }
 }
