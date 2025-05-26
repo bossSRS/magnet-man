@@ -41,16 +41,24 @@ public class MagnetPole : MonoBehaviour {
     {
         isPolarityInEffefct = (Vector3.Distance(transform.position, playerRigidbody.transform.position) <= settings.AreaDistance);
     }
-    private void ApplyPoleEffect(Rigidbody playerRigidBody)
-    {
-        if(isNeutralInEffefct) isNeutralInEffefct = false;
-        Rigidbody rb = playerRigidBody;
-        Vector3 dir = (playerRigidBody.transform.position - transform.position).normalized;
+    private void ApplyPoleEffect(Rigidbody rb) {
+        if (isNeutralInEffefct)
+            isNeutralInEffefct = false;
 
+        Vector3 playerPos = rb.transform.position;
+        Vector3 polePos = transform.position;
+
+        // Flatten direction to horizontal plane
+        Vector3 horizontalDir = (playerPos - polePos);
+        horizontalDir.y = 0f;
+        horizontalDir.Normalize();
+
+        // Polarity logic: repel = +1, attract = -2 (stronger pull)
         bool samePolarity = polePolarity.polarity == polarityManager.CurrentPolarity.polarity;
-        float force = settings.forceMagnitude * (samePolarity ? 1 : -4f);
+        float forceScale = samePolarity ? 1f : -2f;
+        Vector3 magneticForce = horizontalDir * settings.forceMagnitude * forceScale;
 
-        //rb.AddForce(dir * force, ForceMode.Acceleration);
-        rb.linearVelocity = dir * force;
+        // Preserve Y (vertical) velocity for jumping
+        rb.linearVelocity = new Vector3(magneticForce.x, rb.linearVelocity.y, magneticForce.z);
     }
 }

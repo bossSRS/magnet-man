@@ -901,6 +901,7 @@ MonoBehaviour:
   polePolarity: {fileID: 11400000, guid: cbd3c6d36cfe98d4db8a86169ea41885, type: 2}
   settings: {fileID: 11400000, guid: 2c448b3c0d8b5a44cb0737730bc26498, type: 2}
   isPolarityInEffefct: 0
+  isNeutralInEffefct: 0
 --- !u!65 &625579880
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2035,6 +2036,7 @@ MonoBehaviour:
   polePolarity: {fileID: 11400000, guid: d1bd655463e66bb498f9827639354646, type: 2}
   settings: {fileID: 11400000, guid: 2c448b3c0d8b5a44cb0737730bc26498, type: 2}
   isPolarityInEffefct: 0
+  isNeutralInEffefct: 0
 --- !u!1 &1948300513
 GameObject:
   m_ObjectHideFlags: 0
@@ -2142,7 +2144,7 @@ Transform:
   m_GameObject: {fileID: 1948300513}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -105.86, y: -1.53, z: -3.88}
+  m_LocalPosition: {x: -65.24, y: -1.53, z: 33.69}
   m_LocalScale: {x: 3, y: 3.25, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2177,7 +2179,7 @@ Rigidbody:
   m_GameObject: {fileID: 1948300513}
   serializedVersion: 5
   m_Mass: 1
-  m_LinearDamping: 0
+  m_LinearDamping: 0.2
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}

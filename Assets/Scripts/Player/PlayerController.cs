@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
     private PolarityManager polarityManager;
 
     private Vector3 inputVector;
-    private bool isGrounded;
+    public static bool isGrounded;
     private bool canDash = true;
 
     [Header("Visuals")]
@@ -66,9 +66,21 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
     public void Jump() {
         if (!isGrounded) return;
-        print("Applying Jump");
-        rb.AddForce(Vector3.up * settings.jumpForce, ForceMode.Impulse);
+
+        isGrounded = false;
+
+        // Reset Y velocity to zero so jump is consistent
+        Vector3 currentVelocity = rb.linearVelocity;
+        currentVelocity.y = 0f;
+        rb.linearVelocity = currentVelocity;
+
+        // Apply upward impulse
+        Vector3 jumpForce = Vector3.up * settings.jumpForce;
+        rb.AddForce(jumpForce, ForceMode.Impulse);
+
+        Debug.Log("Jump Applied");
     }
+
 
     public void Dash() {
         if (!canDash || inputVector.magnitude == 0f) return;
