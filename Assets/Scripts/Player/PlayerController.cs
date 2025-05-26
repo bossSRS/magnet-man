@@ -1,6 +1,7 @@
 //// Author: Sadikur Rahman ////
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour, IPlayerMovement {
@@ -69,15 +70,25 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
         rb.AddForce(Vector3.up * settings.jumpForce, ForceMode.Impulse);
     }
 
-    public void Dash()
-    {
-        if (!canDash) return; //|| inputVector.magnitude == 0f) return;
-        print("Applying Dash");
+    public void Dash() {
+        if (!canDash || inputVector.magnitude == 0f) return;
+
         canDash = false;
+
+        // Fix direction issues
         Vector3 dashDir = inputVector.normalized;
-        rb.AddForce(dashDir * settings.dashForce, ForceMode.Impulse);
-        Invoke(nameof(ResetDash), 1f); // Adjust cooldown as needed
+
+        // Reset vertical velocity for consistent feel
+        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+
+        // Apply dash force as velocity (for instant response)
+        rb.AddForce(dashDir * settings.dashForce, ForceMode.VelocityChange);
+
+        // Optional: Add dash visual effect or sound here
+
+        Invoke(nameof(ResetDash), 1f); // Cooldown time
     }
+
 
     private void ResetDash() {
         canDash = true;
@@ -94,4 +105,12 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
         rb.angularVelocity = Vector3.zero;
         transform.position = pos;
     }
+    
+#if UNITY_EDITOR
+    private void Update() {
+        if (Keyboard.current.leftShiftKey.wasPressedThisFrame) {
+            Dash();
+        }
+    }
+#endif
 }

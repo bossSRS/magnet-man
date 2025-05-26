@@ -14,8 +14,8 @@ public class TouchInputReader : MonoBehaviour {
     private Vector2 touchStartPos;
     private Vector2 touchEndPos;
     private float lastTapTime = 0f;
-    private float doubleTapDelay = 0.4f;
-    private float swipeThreshold = 100f;
+    private float doubleTapDelay = 1f;
+    private float swipeThreshold = 50f;
     private bool isTouching = false;
 
     private void Awake() {
@@ -35,7 +35,6 @@ public class TouchInputReader : MonoBehaviour {
 
         float now = Time.time;
         if (now - lastTapTime <= doubleTapDelay) {
-            print("DoubleTap");
             OnDoubleTap?.Invoke();
         }
         lastTapTime = now;
@@ -50,9 +49,8 @@ public class TouchInputReader : MonoBehaviour {
     private void OnTouchEnd() {
         isTouching = false;
         Vector2 delta = touchEndPos - touchStartPos;
-        if(GameManager.isUsingJoystick) return;
+
         if (delta.y > swipeThreshold && Mathf.Abs(delta.y) > Mathf.Abs(delta.x)) {
-            print("SwipeUp");
             OnSwipeUp?.Invoke();
         }
     }

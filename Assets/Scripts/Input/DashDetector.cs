@@ -11,7 +11,7 @@ public class DashDetector : MonoBehaviour {
     private const float doubleTapThreshold = 0.4f;
 
     public void OnTouch(InputAction.CallbackContext ctx) {
-        print("Detected Touch->Dash");
+        print("Detected Touch->Dash`");
         if (ctx.performed) {
             float currentTime = Time.time;
             if (currentTime - lastTapTime <= doubleTapThreshold) {
