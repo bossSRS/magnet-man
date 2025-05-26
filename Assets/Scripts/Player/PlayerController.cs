@@ -32,14 +32,14 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
     private void OnEnable() {
         polarityManager.OnPolarityChanged += UpdateFaceColor;
-        MobileInputHandler.OnSwipeUp += Jump;
-        MobileInputHandler.OnDoubleTap += Dash;
+        TouchInputReader.OnSwipeUp += Jump;
+        TouchInputReader.OnDoubleTap += Dash;
     }
 
     private void OnDisable() {
         polarityManager.OnPolarityChanged -= UpdateFaceColor;
-        MobileInputHandler.OnSwipeUp -= Jump;
-        MobileInputHandler.OnDoubleTap -= Dash;
+        TouchInputReader.OnSwipeUp -= Jump;
+        TouchInputReader.OnDoubleTap -= Dash;
     }
 
     private void FixedUpdate() {
@@ -65,13 +65,14 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
     public void Jump() {
         if (!isGrounded) return;
-
+        print("Applying Jump");
         rb.AddForce(Vector3.up * settings.jumpForce, ForceMode.Impulse);
     }
 
-    public void Dash() {
-        if (!canDash || inputVector.magnitude == 0f) return;
-
+    public void Dash()
+    {
+        if (!canDash) return; //|| inputVector.magnitude == 0f) return;
+        print("Applying Dash");
         canDash = false;
         Vector3 dashDir = inputVector.normalized;
         rb.AddForce(dashDir * settings.dashForce, ForceMode.Impulse);

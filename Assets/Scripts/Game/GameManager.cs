@@ -2,9 +2,11 @@
 
 using UnityEngine;
 
-public class GameInitializer : MonoBehaviour {
+public class GameManager : MonoBehaviour {
     [Header("ScriptableObjects")]
     public PlayerSettings playerSettings;
+    [Header("Global Data")]
+    public static bool isUsingJoystick;
     private void Awake() {
         // Register global SOs and settings
         DIContainer.Register(playerSettings);
