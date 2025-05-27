@@ -18,7 +18,7 @@ public class CameraFollow : MonoBehaviour {
     [SerializeField] private bool followRotation = false;
     [SerializeField] private float rotationSpeed = 5f;
 
-    private void LateUpdate() {
+    private void FixedUpdate() {
         if (target == null) return;
 
         Vector3 desiredPosition = target.position + offset;

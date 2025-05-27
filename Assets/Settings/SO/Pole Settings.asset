@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 685b40d8ecd401b459b468ae1165eefa, type: 3}
   m_Name: Pole Settings
   m_EditorClassIdentifier: 
-  forceMagnitude: 25
+  forceMagnitude: 50
   moveSpeed: 2
   moveRange: 3
   AreaDistance: 25

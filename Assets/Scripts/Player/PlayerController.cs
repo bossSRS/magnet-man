@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour, IPlayerMovement {
+    public Rigidbody PlayerRigidBody => rb;
+
     private Rigidbody rb;
     private PlayerSettings settings;
     private PolarityManager polarityManager;
@@ -12,6 +14,11 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
     private Vector3 inputVector;
     public static bool isGrounded;
     private bool canDash = true;
+
+    private Transform stuckPole = null;
+    private float repelDamping = 1f; // 1 = full movement, 0 = fully frozen
+    private float targetRepelDamping = 1f;
+    private const float repelSmoothSpeed = 5f;
 
     [Header("Visuals")]
     public Renderer faceRenderer;
@@ -45,6 +52,7 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
     private void FixedUpdate() {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
+        repelDamping = Mathf.Lerp(repelDamping, targetRepelDamping, Time.fixedDeltaTime * repelSmoothSpeed);
         Move();
         Rotate();
     }
@@ -52,10 +60,11 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
     public void SetMoveInput(Vector3 input) => inputVector = input;
 
     public void Move() {
-        Vector3 moveDir = inputVector.normalized;
+        Vector3 moveDir = inputVector.normalized * repelDamping;
         Vector3 targetPos = rb.position + moveDir * settings.moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(targetPos);
     }
+
 
     public void Rotate() {
         if (inputVector.sqrMagnitude > 0.01f) {
@@ -69,42 +78,27 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
 
         isGrounded = false;
 
-        // Reset Y velocity to zero so jump is consistent
         Vector3 currentVelocity = rb.linearVelocity;
         currentVelocity.y = 0f;
         rb.linearVelocity = currentVelocity;
 
-        // Apply upward impulse
-        Vector3 jumpForce = Vector3.up * settings.jumpForce;
-        rb.AddForce(jumpForce, ForceMode.Impulse);
-
+        rb.AddForce(Vector3.up * settings.jumpForce, ForceMode.Impulse);
         Debug.Log("Jump Applied");
     }
-
 
     public void Dash() {
         if (!canDash || inputVector.magnitude == 0f) return;
 
         canDash = false;
-
-        // Fix direction issues
         Vector3 dashDir = inputVector.normalized;
 
-        // Reset vertical velocity for consistent feel
         rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
-
-        // Apply dash force as velocity (for instant response)
         rb.AddForce(dashDir * settings.dashForce, ForceMode.VelocityChange);
 
-        // Optional: Add dash visual effect or sound here
-
-        Invoke(nameof(ResetDash), 1f); // Cooldown time
+        Invoke(nameof(ResetDash), 1f);
     }
 
-
-    private void ResetDash() {
-        canDash = true;
-    }
+    private void ResetDash() => canDash = true;
 
     private void UpdateFaceColor(PolarityData polarity) {
         if (faceRenderer != null && polarity != null) {
@@ -117,7 +111,27 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
         rb.angularVelocity = Vector3.zero;
         transform.position = pos;
     }
-    
+
+    public Vector3 GetInputDirection() => inputVector.normalized;
+
+    public void SetRepelDamping(bool isFreezing) {
+        targetRepelDamping = isFreezing ? 0f : 1f;
+    }
+
+    public bool IsStuckToPole(Transform pole) => stuckPole == pole;
+
+    private void OnCollisionStay(Collision other) {
+        if (other.transform.CompareTag("Pole")) {
+            stuckPole = other.transform;
+        }
+    }
+
+    private void OnCollisionExit(Collision other) {
+        if (other.transform.CompareTag("Pole")) {
+            stuckPole = null;
+        }
+    }
+
 #if UNITY_EDITOR
     private void Update() {
         if (Keyboard.current.leftShiftKey.wasPressedThisFrame) {
