@@ -14,6 +14,8 @@ public class MagnetPole : MonoBehaviour {
     [Header("Debug Info")]
     public bool isPolarityInEffect;
     private bool wasInPolarityZone = false;
+    private bool isAppliedRepelEffect;
+
     private void Start()
     {
         polarityManager = DIContainer.Resolve<PolarityManager>();
@@ -58,31 +60,43 @@ public class MagnetPole : MonoBehaviour {
         Vector3 inputDir = playerController.GetInputDirection();
         float dot = Vector3.Dot(inputDir, -dirNormalized); // >0 = player is pushing toward pole
 
-        if (samePolarity) {
-            // ✅ REPULSION — Freeze movement if player pushes in, repel otherwise
-            if (dot > 0.5f) {
-                // Player is resisting → freeze movement inside the field
-                playerController.SetRepelDamping(true); 
-            } else {
-                // Repel with force
-                float repelForce = settings.repelforceMagnitude;
-                Vector3 repel = dirNormalized * repelForce ;
-                rb.AddForce(repel, ForceMode.Impulse);
-                playerController.SetRepelDamping(false);
-            }
-        } else {
-            // ✅ ATTRACTION — Pull until stuck, then stay stuck
-            float attractForce = settings.attarctforceMagnitude;
-
-            if (!playerController.IsStuckToPole(transform)) {
-                Vector3 pull = -dirNormalized * attractForce;
-                rb.AddForce(pull, ForceMode.Force);
+        if (samePolarity)
+        {
+            //  REPULSION — Freeze movement if player pushes in, repel otherwise
+            ApplyRepelEffect(rb,dot, dirNormalized);
+        } 
+        else 
+        {
+            //  ATTRACTION — Pull until stuck, then stay stuck
+            ApplyAttractEffect(dirNormalized,rb);
+        }
+    }
+    private void ApplyAttractEffect(Vector3 dirNormalized, Rigidbody rb)
+    {
+        float attractForce = settings.attarctforceMagnitude;
+        if (!playerController.IsStuckToPole(transform)) {
+            Vector3 pull = -dirNormalized * attractForce;
+            rb.AddForceAtPosition(pull,this.transform.position, ForceMode.Force);
                 
-            } else {
-                // Already stuck — keep gently pressing in so player doesn't slip
-                Vector3 gentleSnap = -dirNormalized ;
-                rb.MovePosition(rb.position + gentleSnap * Time.fixedDeltaTime);
-            }
+        } else {
+            // Already stuck — keep gently pressing in so player doesn't slip
+            Vector3 gentleSnap = -dirNormalized ;
+            rb.MovePosition(rb.position + gentleSnap * Time.fixedDeltaTime);
+        }
+        playerController.SetRepelDamping(false);
+    }
+
+    private void ApplyRepelEffect(Rigidbody rb, float dot,Vector3 dirNormalized)
+    {
+        if (dot > 0.5f) {
+            // Player is resisting → freeze movement inside the field
+            playerController.SetRepelDamping(true); 
+        }
+        else {
+            // Repel with force
+            float repelForce = settings.repelforceMagnitude;
+            Vector3 repel = dirNormalized * repelForce ;
+            rb.AddForceAtPosition(repel,rb.position, ForceMode.Impulse);
             playerController.SetRepelDamping(false);
         }
     }
