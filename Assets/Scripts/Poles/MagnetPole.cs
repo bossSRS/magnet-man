@@ -10,7 +10,7 @@ public class MagnetPole : MonoBehaviour {
 
     private PolarityManager polarityManager;
     private PlayerController playerController;
-
+    
     [Header("Debug Info")]
     public bool isPolarityInEffect;
     private bool wasInPolarityZone = false;
@@ -65,14 +65,14 @@ public class MagnetPole : MonoBehaviour {
                 playerController.SetRepelDamping(true); 
             } else {
                 // Repel with force
-                float repelForce = settings.forceMagnitude * 0.5f;
-                Vector3 repel = dirNormalized * repelForce;
-                rb.AddForce(repel, ForceMode.Force);
+                float repelForce = settings.repelforceMagnitude;
+                Vector3 repel = dirNormalized * repelForce ;
+                rb.AddForce(repel, ForceMode.Impulse);
                 playerController.SetRepelDamping(false);
             }
         } else {
             // ✅ ATTRACTION — Pull until stuck, then stay stuck
-            float attractForce = settings.forceMagnitude * 2f;
+            float attractForce = settings.attarctforceMagnitude;
 
             if (!playerController.IsStuckToPole(transform)) {
                 Vector3 pull = -dirNormalized * attractForce;
@@ -80,7 +80,7 @@ public class MagnetPole : MonoBehaviour {
                 
             } else {
                 // Already stuck — keep gently pressing in so player doesn't slip
-                Vector3 gentleSnap = -dirNormalized * 0.2f;
+                Vector3 gentleSnap = -dirNormalized ;
                 rb.MovePosition(rb.position + gentleSnap * Time.fixedDeltaTime);
             }
             playerController.SetRepelDamping(false);

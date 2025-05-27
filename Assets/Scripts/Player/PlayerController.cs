@@ -132,11 +132,12 @@ public class PlayerController : MonoBehaviour, IPlayerMovement {
         }
     }
 
-#if UNITY_EDITOR
+
     private void Update() {
+#if UNITY_EDITOR
         if (Keyboard.current.leftShiftKey.wasPressedThisFrame) {
             Dash();
         }
-    }
 #endif
+    }
 }
