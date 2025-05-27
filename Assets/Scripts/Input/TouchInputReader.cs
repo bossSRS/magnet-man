@@ -1,5 +1,5 @@
 //// Author: Sadikur Rahman ////
-// Swipe Up (Jump) and Double Tap (Dash) - fixed & instant on mobile/editor
+// Handles swipe up (Jump) and double tap (Dash) using Unity Input System for touch or mouse input.
 
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,47 +10,44 @@ public class TouchInputReader : MonoBehaviour {
     public static event Action OnDoubleTap;
 
     private PlayerControls controls;
+    private Vector2 touchStartPos, touchEndPos;
 
-    private Vector2 touchStartPos;
-    private Vector2 touchEndPos;
-    private float lastTapTime = 0f;
-    private float doubleTapDelay = 1f;
-    private float swipeThreshold = 50f;
-    private bool isTouching = false;
+    private float lastTapTime;
+    private const float doubleTapDelay = 1f;
+    private const float swipeThreshold = 50f;
+
+    private bool isTouching;
 
     private void Awake() {
         controls = new PlayerControls();
 
-        controls.Player.TouchPress.started += ctx => OnTouchStart();
-        controls.Player.TouchPress.canceled += ctx => OnTouchEnd();
-        controls.Player.TouchPos.performed += ctx => OnTouchMove(ctx.ReadValue<Vector2>());
+        controls.Player.TouchPress.started += _ => HandleTouchStart();
+        controls.Player.TouchPress.canceled += _ => HandleTouchEnd();
+        controls.Player.TouchPos.performed += ctx => touchEndPos = ctx.ReadValue<Vector2>();
     }
 
     private void OnEnable() => controls.Enable();
     private void OnDisable() => controls.Disable();
 
-    private void OnTouchStart() {
-        if(GameManager.isUsingJoystick) return;
+    private void HandleTouchStart() {
+        if (GameManager.isUsingJoystick) return;
+
         isTouching = true;
         touchStartPos = controls.Player.TouchPos.ReadValue<Vector2>();
 
-        float now = Time.time;
-        if (now - lastTapTime <= doubleTapDelay) {
+        if (Time.time - lastTapTime <= doubleTapDelay) {
             OnDoubleTap?.Invoke();
         }
-        lastTapTime = now;
+
+        lastTapTime = Time.time;
     }
 
-    private void OnTouchMove(Vector2 pos) {
-        if (isTouching) {
-            touchEndPos = pos;
-        }
-    }
+    private void HandleTouchEnd() {
+        if (GameManager.isUsingJoystick) return;
 
-    private void OnTouchEnd() {
         isTouching = false;
-        if(GameManager.isUsingJoystick) return;
         Vector2 delta = touchEndPos - touchStartPos;
+
         if (delta.y > swipeThreshold && Mathf.Abs(delta.y) > Mathf.Abs(delta.x)) {
             OnSwipeUp?.Invoke();
         }

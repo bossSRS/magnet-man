@@ -1,31 +1,53 @@
 //// Author: Sadikur Rahman ////
+// Handles joystick/keyboard input and sends movement data to IMovable. Separate jump and dash interfaces for modularity.
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour {
     [SerializeField] private FixedJoystick joystick;
-    private IPlayerMovement movement;
-    Vector3 input;
-    [SerializeField] private bool isTesting;
+    [SerializeField] private bool isTesting = false;
 
-    private void Awake() 
-    {
-        movement = GetComponent<IPlayerMovement>();
+    private IMovable mover;
+    private IJumpable jumper;
+    private IDashable dasher;
+
+    private Vector3 input;
+
+    private void Awake() {
+        mover = GetComponent<IMovable>();
+        jumper = GetComponent<IJumpable>();
+        dasher = GetComponent<IDashable>();
     }
-    private void Update()
-    {
-        if (isTesting)
-        {
-            var horizontal = Keyboard.current.leftArrowKey.isPressed ? -1 : 0;
-            horizontal = Keyboard.current.rightArrowKey.isPressed ? 1 : horizontal;
-            var vertical = Keyboard.current.upArrowKey.isPressed ? 1 : 0;
-            vertical = Keyboard.current.downArrowKey.isPressed ? -1 : vertical;
-            input = new Vector3(horizontal, 0, vertical);
-        }
-        else
-        {
-            input = new Vector3(joystick.Horizontal, 0, joystick.Vertical);
-        }
-        movement?.SetMoveInput(input);
+
+    private void OnEnable() {
+        TouchInputReader.OnSwipeUp += TryJump;
+        TouchInputReader.OnDoubleTap += TryDash;
     }
+
+    private void OnDisable() {
+        TouchInputReader.OnSwipeUp -= TryJump;
+        TouchInputReader.OnDoubleTap -= TryDash;
+    }
+
+    private void Update() {
+        input = isTesting ? GetKeyboardInput() : GetJoystickInput();
+        mover?.SetMoveInput(input);
+    }
+
+    private Vector3 GetJoystickInput() {
+        return new Vector3(joystick.Horizontal, 0f, joystick.Vertical);
+    }
+
+    private Vector3 GetKeyboardInput() {
+        float h = 0f, v = 0f;
+        if (Keyboard.current.leftArrowKey.isPressed) h = -1f;
+        if (Keyboard.current.rightArrowKey.isPressed) h = 1f;
+        if (Keyboard.current.upArrowKey.isPressed) v = 1f;
+        if (Keyboard.current.downArrowKey.isPressed) v = -1f;
+        return new Vector3(h, 0f, v);
+    }
+
+    private void TryJump() => jumper?.Jump();
+    private void TryDash() => dasher?.Dash();
 }
