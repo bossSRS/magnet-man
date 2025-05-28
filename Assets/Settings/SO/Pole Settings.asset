@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 685b40d8ecd401b459b468ae1165eefa, type: 3}
   m_Name: Pole Settings
   m_EditorClassIdentifier: 
-  attarctforceMagnitude: 200
+  attarctforceMagnitude: 150
   repelforceMagnitude: 0.5
   moveSpeed: 5
   moveRange: 30

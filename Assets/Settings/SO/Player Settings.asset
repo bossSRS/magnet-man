@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017c41dd041f90d4fbca44666439c790, type: 3}
   m_Name: Player Settings
   m_EditorClassIdentifier: 
-  moveSpeed: 7
-  jumpForce: 14
-  dashForce: 21
+  moveSpeed: 10
+  jumpForce: 15
+  dashForce: 20
   polarityToggleMin: 3
   polarityToggleMax: 5

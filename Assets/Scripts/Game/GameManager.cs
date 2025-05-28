@@ -13,12 +13,8 @@ public class GameManager : MonoBehaviour {
         DIContainer.Register(playerSettings);
         SetTargetFrameRate();
     }
-
-    private void SetTargetFrameRate() {
-#if UNITY_ANDROID && !UNITY_EDITOR
+    private void SetTargetFrameRate() 
+    {
         Application.targetFrameRate = 60;
-#else
-        Application.targetFrameRate = 165;
-#endif
     }
 }
