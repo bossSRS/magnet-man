@@ -1,4 +1,5 @@
 //// Author: Sadikur Rahman ////
+// Applies polarity-based magnetic effects to the player: attraction or repulsion.
 
 using UnityEngine;
 
@@ -10,14 +11,12 @@ public class MagnetPole : MonoBehaviour {
 
     private PolarityManager polarityManager;
     private PlayerController playerController;
-    
+
     [Header("Debug Info")]
     public bool isPolarityInEffect;
-    private bool wasInPolarityZone = false;
-    private bool isAppliedRepelEffect;
+    private bool wasInPolarityZone;
 
-    private void Start()
-    {
+    private void Start() {
         polarityManager = DIContainer.Resolve<PolarityManager>();
         playerController = FindObjectOfType<PlayerController>();
     }
@@ -28,75 +27,59 @@ public class MagnetPole : MonoBehaviour {
 
     private void FixedUpdate() {
         if (!isPolarityInEffect || playerController?.PlayerRigidBody == null) return;
-        ApplyPoleEffect(playerController.PlayerRigidBody);
+
+        Vector3 direction = playerController.transform.position - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f) return;
+
+        Vector3 dirNormalized = direction.normalized;
+        bool samePolarity = polePolarity.polarity == polarityManager.CurrentPolarity.polarity;
+        float inputDot = Vector3.Dot(playerController.GetInputDirection(), -dirNormalized);
+
+        if (samePolarity)
+            ApplyRepelEffect(dirNormalized, inputDot);
+        else
+            ApplyAttractEffect(dirNormalized);
     }
 
-    
-
     private void CheckPolarityEffectZone() {
-        float dist = Vector3.Distance(transform.position, playerController.transform.position);
-        isPolarityInEffect = dist <= settings.AreaDistance;
+        float distance = Vector3.Distance(transform.position, playerController.transform.position);
+        isPolarityInEffect = distance <= settings.AreaDistance;
 
-        // If player just left the polarity zone
         if (wasInPolarityZone && !isPolarityInEffect) {
-            playerController.SetRepelDamping(false); // ✅ Reset damping smoothly
+            playerController.SetRepelDamping(false); // Smooth restore
         }
 
         wasInPolarityZone = isPolarityInEffect;
     }
 
-    private void ApplyPoleEffect(Rigidbody rb) {
-        Vector3 playerPos = rb.transform.position;
-        Vector3 polePos = transform.position;
+    private void ApplyAttractEffect(Vector3 dirNormalized) {
+        var rb = playerController.PlayerRigidBody;
+        float force = settings.attarctforceMagnitude;
 
-        Vector3 direction = playerPos - polePos;
-        direction.y = 0f;
-
-        float distance = direction.magnitude;
-        if (distance < 0.001f) return;
-
-        Vector3 dirNormalized = direction / distance;
-        bool samePolarity = polePolarity.polarity == polarityManager.CurrentPolarity.polarity;
-        Vector3 inputDir = playerController.GetInputDirection();
-        float dot = Vector3.Dot(inputDir, -dirNormalized); // >0 = player is pushing toward pole
-
-        if (samePolarity)
-        {
-            //  REPULSION — Freeze movement if player pushes in, repel otherwise
-            ApplyRepelEffect(rb,dot, dirNormalized);
-        } 
-        else 
-        {
-            //  ATTRACTION — Pull until stuck, then stay stuck
-            ApplyAttractEffect(dirNormalized,rb);
-        }
-    }
-    private void ApplyAttractEffect(Vector3 dirNormalized, Rigidbody rb)
-    {
-        float attractForce = settings.attarctforceMagnitude;
         if (!playerController.IsStuckToPole(transform)) {
-            Vector3 pull = -dirNormalized * attractForce;
-            rb.AddForceAtPosition(pull,this.transform.position, ForceMode.Force);
-                
+            Vector3 attract = -dirNormalized * force;
+            rb.AddForceAtPosition(attract, transform.position, ForceMode.Force);
         } else {
-            // Already stuck — keep gently pressing in so player doesn't slip
-            Vector3 gentleSnap = -dirNormalized ;
-            rb.MovePosition(rb.position + gentleSnap * Time.fixedDeltaTime);
+            // Lock to surface gently
+            Vector3 softAttach = -dirNormalized;
+            rb.MovePosition(rb.position + softAttach * Time.fixedDeltaTime);
         }
+
         playerController.SetRepelDamping(false);
     }
 
-    private void ApplyRepelEffect(Rigidbody rb, float dot,Vector3 dirNormalized)
-    {
-        if (dot > 0.5f) {
-            // Player is resisting → freeze movement inside the field
-            playerController.SetRepelDamping(true); 
-        }
-        else {
-            // Repel with force
-            float repelForce = settings.repelforceMagnitude;
-            Vector3 repel = dirNormalized * repelForce ;
-            rb.AddForceAtPosition(repel,rb.position, ForceMode.Impulse);
+    private void ApplyRepelEffect(Vector3 dirNormalized, float inputDot) {
+        var rb = playerController.PlayerRigidBody;
+
+        if (inputDot > 0.5f) {
+            // Freeze movement if player resists
+            playerController.SetRepelDamping(true);
+        } else {
+            float force = settings.repelforceMagnitude;
+            Vector3 repel = dirNormalized * force;
+            rb.AddForceAtPosition(repel, rb.position, ForceMode.Impulse);
             playerController.SetRepelDamping(false);
         }
     }

@@ -1,16 +1,23 @@
 //// Author: Sadikur Rahman ////
+// Moves the pole object horizontally using ping-pong motion based on PoleSettings.
+
 using UnityEngine;
 
 public class PoleMovement : MonoBehaviour {
-    public PoleSettings settings;
-    private Vector3 startPos;
+    [SerializeField] private PoleSettings settings;
+
+    private Vector3 startPosition;
 
     private void Start() {
-        startPos = transform.position;
+        startPosition = transform.position;
     }
 
     private void Update() {
-        float x = Mathf.PingPong(Time.time * settings.moveSpeed, settings.moveRange) - (settings.moveRange / 2);
-        transform.position = startPos + new Vector3(x, 0, 0);
+        MoveHorizontally();
+    }
+
+    private void MoveHorizontally() {
+        float offset = Mathf.PingPong(Time.time * settings.moveSpeed, settings.moveRange) - (settings.moveRange / 2f);
+        transform.position = startPosition + new Vector3(offset, 0f, 0f);
     }
 }

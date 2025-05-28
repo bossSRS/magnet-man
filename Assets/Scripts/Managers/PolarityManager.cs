@@ -1,13 +1,17 @@
 //// Author: Sadikur Rahman ////
+// Manages current magnetic polarity and toggles it periodically. Broadcasts changes to listeners.
 
 using System;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+
 public class PolarityManager : MonoBehaviour {
     public static PolarityManager Instance { get; private set; }
 
-    public PolarityData northPolarity;
-    public PolarityData southPolarity;
+    [Header("Polarity Settings")]
+    [SerializeField] private PolarityData northPolarity;
+    [SerializeField] private PolarityData southPolarity;
+    private PlayerSettings playerSettings;
     public PolarityData CurrentPolarity { get; private set; }
 
     public event Action<PolarityData> OnPolarityChanged;
@@ -19,16 +23,19 @@ public class PolarityManager : MonoBehaviour {
         }
 
         Instance = this;
-        DIContainer.Register<PolarityManager>(this);
-        CurrentPolarity = northPolarity; // Default start
+        DIContainer.Register(this);
+        CurrentPolarity = northPolarity; // Initial state
+        playerSettings = DIContainer.Resolve<PlayerSettings>();
     }
 
-    private void Start() => StartCoroutine(PolarityCycle());
+    private void Start() {
+        StartCoroutine(PolarityCycle());
+    }
 
     private IEnumerator PolarityCycle() {
         while (true) {
-            float wait = UnityEngine.Random.Range(3f, 5f);
-            yield return new WaitForSeconds(wait);
+            float waitTime = UnityEngine.Random.Range(playerSettings.polarityToggleMin, playerSettings.polarityToggleMax);
+            yield return new WaitForSeconds(waitTime);
             TogglePolarity();
         }
     }
